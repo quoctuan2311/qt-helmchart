@@ -1,0 +1,31 @@
+{{- if and .Values.persistentvolumeclaim.enabled (not .Values.persistentvolumeclaim.claimNameCustom) -}}
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: {{ .Release.Name }}-pvc
+spec:
+  storageClassName: {{ .Values.persistentvolumeclaim.storageClassName | quote }}
+  selector: {{ .Values.persistentvolumeclaim.selector | quote }}
+  accessModes:
+    - {{ .Values.persistentvolumeclaim.accessModes | quote }}
+  resources:
+    requests:
+      storage: {{ .Values.persistentvolumeclaim.storage | quote }}
+---
+{{- else if and .Values.custompersistentvolumesclaim.enabled (not .Values.persistentvolumeclaim.claimNameCustom) -}}
+{{- range $key, $val := .Values.custompersistentvolumesclaim.volume }}
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: {{ .name | quote }}
+spec:
+  storageClassName: {{ .storageClassName | quote }}
+  selector: {{ .selector | quote }}
+  accessModes:
+    - {{ .accessModes | quote }}
+  resources:
+    requests:
+      storage: {{ .storage | quote }}
+---
+{{- end }}
+{{- end }}

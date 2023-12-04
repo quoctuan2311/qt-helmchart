@@ -1,0 +1,101 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-deployment
+  labels:
+    {{- include "qt-chart.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  {{- if .Values.hostname }}
+  hostname: {{ .Values.hostname }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "qt-chart.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+        checksum/config: {{ include ("qt-chart.test") . | sha256sum }}
+      {{- with .Values.labels }}
+      labels:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+        {{- include "qt-chart.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- if .Values.serviceAccount.enabled }}
+      serviceAccountName: {{ include "qt-chart.serviceAccountName" . }}
+      {{- end }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+      - name: {{ .Release.Name }}
+        securityContext:
+          {{- toYaml .Values.securityContext | nindent 12 }}
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        ports:
+        {{- range $key, $val := .Values.service.ports }}
+        - name: {{ $val.name }}
+          containerPort: {{ $val.containerPort }}
+          protocol: TCP
+        {{- end }}
+        {{- if .Values.volumesData.enabled -}}
+        {{- with .Values.volumesData.volumeMounts }}
+        volumeMounts:
+          {{- toYaml . | nindent 8 }}
+        {{- end }}
+        {{- end }}
+        {{- if .Values.healthcheck.enabled }}
+        livenessProbe:
+          {{- toYaml .Values.healthcheck.livenessProbe | nindent 10 }}
+        {{- end }}
+        {{- if .Values.healthcheck.enabled }}
+        readinessProbe:
+          {{- toYaml .Values.healthcheck.readinessProbe | nindent 10 }}
+        {{- end }}
+        resources:
+          {{- toYaml .Values.resources | nindent 10 }}
+        {{- if .Values.environment.enabled }}
+        envFrom:
+        {{- if .Values.environment.configmap}}
+        - configMapRef:
+            name: {{ .Release.Name }}-configmap
+        {{- end }}
+        {{- if .Values.environment.secretData}}
+        - secretRef:
+            name: {{ .Release.Name }}-secret
+        {{- end }}
+        {{- end }}
+
+      {{- if .Values.volumesData.enabled -}}
+      {{- with .Values.volumesData.volumes }}
+      volumes:
+        {{- toYaml . | nindent 6 }}
+      {{- end }}
+      {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.hostAliases }}
+      hostAliases:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+
