@@ -71,8 +71,23 @@ Create the name of the service name
 
 
 {{/*
-Create the name of test
+Create the data of configmap
 */}}
-{{- define "qt-chart.test" -}}
-{{- default "default" .Values.environment.configmap }}
+{{- define "qt-chart.configmapData" -}}
+{{- if .Values.environment.enabled }}
+{{- default (include "qt-chart.fullname" .) .Values.environment.configmap }}
+{{- else }}
+{{- default "default" .Release.Name | replace "-" "" }}
+{{- end }}
+{{- end }}
+
+{{/*
+Create the data of secretData
+*/}}
+{{- define "qt-chart.secretData" -}}
+{{- if .Values.environment.enabled }}
+{{- default (include "qt-chart.fullname" .) (printf "%s-%s" .Values.environment.secretData .Values.environment.secretDataString) }}
+{{- else }}
+{{- default "default" .Release.Name | replace "-" "" }}
+{{- end }}
 {{- end }}

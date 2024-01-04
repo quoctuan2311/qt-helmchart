@@ -20,7 +20,8 @@ spec:
       annotations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-        checksum/config: {{ include ("qt-chart.test") . | sha256sum }}
+        checksum/configmap: {{ include ("qt-chart.configmapData") . | sha256sum }}
+        checksum/secret: {{ include ("qt-chart.secretData") . | sha256sum }}
       {{- with .Values.labels }}
       labels:
         {{- toYaml . | nindent 8 }}
