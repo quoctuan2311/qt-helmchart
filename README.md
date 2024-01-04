@@ -1,21 +1,20 @@
-# helmchart
+# Helm Chart
 
-**Helmchart Install Guilde**
+## **Helmchart Install Guilde**
 
-*Install Helm (Centos)*
+## *Install Helm (Centos)*
 ```
 wget https://get.helm.sh/helm-v3.3.2-linux-amd64.tar.gz
 tar -zxvf helm-v3.3.2-linux-amd64.tar.gz
 sudo mv linux-amd64/helm /usr/local/bin/helm
 ```
 
-*Create Helm Chart*
+## *Create Helm Chart*
 ```
 helm create qt-chart
 ```
 
-*Index Helm Repo*
-
+## *Index Helm Repo*
 ```
 helm package qt-chart
 mkdir helm-repo
@@ -24,15 +23,13 @@ helm repo index helm-repo --url https://helm-repo.qt.com.vn
 upload file .tgz and index.yaml to bucket s3
 ```
 
-*Push Helm Repo to Repository*
-
+## *Push Helm Repo to Repository*
 ```
 helm package qt-chart
 helm push ./qt-chart-1.3.0.tgz oci://<Repository URL>/qt-chart
 ```
 
-*How To Use*
-
+## *How To Use*
 ### S3
 
 ```
